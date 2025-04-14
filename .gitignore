@@ -149,3 +149,6 @@ target/
 .coverage
 coverage/
 .nyc_output
+
+# Ignore large model files
+src/models/metadata_agent/adapter_model.safetensors
