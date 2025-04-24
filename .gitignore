@@ -1,3 +1,8 @@
+data/jsonl/new_test.jsonl
+data/jsonl/new_training.jsonl
+data/jsonl/test.jsonl
+data/jsonl/training.jsonl
+
 # OS generated files
 .DS_Store
 .DS_Store?

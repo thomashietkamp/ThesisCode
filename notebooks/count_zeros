@@ -1,0 +1,102 @@
+import pandas as pd
+import os
+import sys
+from pathlib import Path
+
+# Get the project root directory
+ROOT_DIR = Path(__file__).resolve().parent.parent
+
+# Define paths
+CLAUSES_FILE = ROOT_DIR / "data/CUAD_v1/master_clauses.csv"
+
+
+def analyze_zero_clause_contracts():
+    """Analyzes contracts with zero clauses in the dataset"""
+
+    print(f"Loading clauses from {CLAUSES_FILE}")
+    try:
+        # Load the master clauses file
+        clauses_df = pd.read_csv(CLAUSES_FILE, encoding='latin1')
+        print(f"Loaded {len(clauses_df)} contract entries")
+
+        # Get all columns that contain clause data (ending with -Answer)
+        answer_columns = [
+            col for col in clauses_df.columns if col.endswith('-Answer')]
+        print(f"Found {len(answer_columns)} clause type columns")
+
+        # Calculate clause counts for each contract
+        clause_counts = []
+        for idx, row in clauses_df.iterrows():
+            yes_count = 0
+            for col in answer_columns:
+                try:
+                    if col in clauses_df.columns:
+                        value = str(row[col]).strip().lower()
+                        if value == 'yes':
+                            yes_count += 1
+                except Exception as e:
+                    print(
+                        f"Error processing column {col} for row {idx}: {str(e)}")
+            clause_counts.append(yes_count)
+
+        # Add the clause count to the dataframe
+        clauses_df['clause_count'] = clause_counts
+
+        # Count how many contracts have zero clauses
+        zero_clause_contracts = clauses_df[clauses_df['clause_count'] == 0]
+        zero_clause_count = len(zero_clause_contracts)
+
+        # Calculate percentage
+        total_contracts = len(clauses_df)
+        zero_clause_percentage = (zero_clause_count / total_contracts) * 100
+
+        # Find the max number of spans (clauses) in any contract
+        max_clause_count = clauses_df['clause_count'].max()
+        max_clause_contracts = clauses_df[clauses_df['clause_count']
+                                          == max_clause_count]
+
+        print(f"\nZero Clause Analysis Results:")
+        print(f"Total contracts: {total_contracts}")
+        print(f"Contracts with zero clauses: {zero_clause_count}")
+        print(f"Percentage with zero clauses: {zero_clause_percentage:.2f}%")
+
+        print(f"\nMaximum Clause Analysis:")
+        print(f"Maximum number of clauses in any contract: {max_clause_count}")
+        print(
+            f"Number of contracts with maximum clauses: {len(max_clause_contracts)}")
+
+        # Display some contracts with maximum clauses
+        if not max_clause_contracts.empty:
+            print("\nSample contracts with maximum clauses:")
+            if 'Filename' in max_clause_contracts.columns:
+                for filename in max_clause_contracts['Filename'].head(5):
+                    print(f"- {filename}")
+            elif 'Document Name' in max_clause_contracts.columns:
+                for doc_name in max_clause_contracts['Document Name'].head(5):
+                    print(f"- {doc_name}")
+
+        # Display some sample filenames with zero clauses
+        if not zero_clause_contracts.empty:
+            print("\nSample contracts with zero clauses:")
+            if 'Filename' in zero_clause_contracts.columns:
+                for filename in zero_clause_contracts['Filename'].head(5):
+                    print(f"- {filename}")
+            elif 'Document Name' in zero_clause_contracts.columns:
+                for doc_name in zero_clause_contracts['Document Name'].head(5):
+                    print(f"- {doc_name}")
+
+        # Distribution of clause counts
+        print("\nClause Count Distribution:")
+        clause_dist = clauses_df['clause_count'].value_counts().sort_index()
+        for count, frequency in clause_dist.items():
+            percentage = (frequency / total_contracts) * 100
+            print(
+                f"Contracts with {count} clauses: {frequency} ({percentage:.2f}%)")
+
+    except Exception as e:
+        print(f"Error analyzing clauses: {str(e)}")
+        return None
+
+
+if __name__ == "__main__":
+    analyze_zero_clause_contracts()

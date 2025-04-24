@@ -1,0 +1,48 @@
+{
+    "Document Name": "Metadata",
+    "Parties": "Metadata",
+    "Agreement Date": "Metadata",
+    "Effective Date": "Metadata",
+    "Expiration Date": "Metadata",    
+    "Renewal Term": "Metadata",
+    "Notice Period To Terminate Renewal": "Metadata",
+    "Governing Law": "Metadata",
+
+    "IP Ownership Assignment": "Intellectual Property & Licensing Agent",
+    "Joint IP Ownership": "Intellectual Property & Licensing Agent",
+    "License Grant": "Intellectual Property & Licensing Agent",
+    "Non-Transferable License": "Intellectual Property & Licensing Agent",
+    "Affiliate License-Licensor": "Intellectual Property & Licensing Agent",
+    "Affiliate License-Licensee": "Intellectual Property & Licensing Agent",
+    "Unlimited/All-You-Can-Eat-License": "Intellectual Property & Licensing Agent",
+    "Irrevocable Or Perpetual License": "Intellectual Property & Licensing Agent",
+    "Source Code Escrow": "Intellectual Property & Licensing Agent",
+  
+    "Most Favored Nation": "Competition & Exclusivity Agent",
+    "Competitive Restriction Exception": "Competition & Exclusivity Agent",
+    "Non-Compete": "Competition & Exclusivity Agent",
+    "Exclusivity": "Competition & Exclusivity Agent",
+    "No-Solicit Of Customers": "Competition & Exclusivity Agent",
+    "No-Solicit Of Employees": "Competition & Exclusivity Agent",
+    "Non-Disparagement": "Competition & Exclusivity Agent",
+    "Rofr/Rofo/Rofn": "Competition & Exclusivity Agent",
+  
+    "Termination For Convenience": "Termination & Control Rights Agent",
+    "Change Of Control": "Termination & Control Rights Agent",
+    "Anti-Assignment": "Termination & Control Rights Agent",
+    "Post-Termination Services": "Termination & Control Rights Agent",
+  
+    "Revenue/Profit Sharing": "Financial & Commercial Terms Agent",
+    "Price Restrictions": "Financial & Commercial Terms Agent",
+    "Minimum Commitment": "Financial & Commercial Terms Agent",
+    "Volume Restriction": "Financial & Commercial Terms Agent",
+    "Audit Rights": "Financial & Commercial Terms Agent",
+  
+    "Uncapped Liability": "Legal Protections & Liability Agent",
+    "Cap On Liability": "Legal Protections & Liability Agent",
+    "Liquidated Damages": "Legal Protections & Liability Agent",
+    "Warranty Duration": "Legal Protections & Liability Agent",
+    "Insurance": "Legal Protections & Liability Agent",
+    "Covenant Not To Sue": "Legal Protections & Liability Agent",
+    "Third Party Beneficiary": "Legal Protections & Liability Agent"
+  }

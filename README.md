@@ -1,46 +1,132 @@
-# Gemma 3 Inference Script
+# Legal Clause Extraction with Gemma 3
 
-A simple script for generating responses using Google's Gemma 3 4B model.
+This project provides a system for extracting and categorizing legal clauses from contracts using fine-tuned Gemma 3 models. It supports five specialized agents, each focusing on a different legal category:
 
-## Requirements
+1. **Intellectual Property & Licensing Agent**
+2. **Competition & Exclusivity Agent**
+3. **Termination & Control Rights Agent**
+4. **Financial & Commercial Terms Agent**
+5. **Legal Protections & Liability Agent**
+
+## Project Structure
 
 ```
-pip install torch transformers huggingface_hub
+.
+├── data/
+│   ├── CUAD_v1/                   # Original CUAD dataset
+│   │   ├── full_contract_pdf/     # PDF contracts
+│   │   └── subcategories/         # CSV files with labeled clauses
+│   └── clause_extraction/         # Generated training data
+│       ├── intellectual_property_licensing/
+│       ├── competition_exclusivity/
+│       ├── termination_control/
+│       ├── financial_commercial/
+│       └── legal_protections_liability/
+├── models/                        # Fine-tuned models will be saved here
+├── src/
+│   ├── data_processing/
+│   │   └── prepare_clause_extraction_data.py
+│   ├── training/
+│   │   └── train_clause_extraction_models.py
+│   └── inference/
+│       └── clause_extraction_inference.py
+└── README.md
 ```
 
-## Authentication
+## Installation
 
-This script requires authentication with Hugging Face to download the Gemma model. You need to:
-
-1. Create a Hugging Face account and generate an access token at https://huggingface.co/settings/tokens
-2. Set the token as an environment variable:
+1. Clone the repository:
 
 ```bash
-export HF_TOKEN=your_huggingface_token
+git clone <repository-url>
+cd <repository-directory>
 ```
 
-Or pass it directly before running the script:
+2. Install dependencies:
 
 ```bash
-HF_TOKEN=your_huggingface_token python src/gemma_inference.py --prompt "..."
+pip install -r requirements.txt
 ```
 
-## Usage
+## Data Preparation
 
-Run the script with a prompt text and optional question:
+To prepare the training data for the models:
 
 ```bash
-python src/gemma_inference.py --prompt "Your document text here" --question "Your question here"
+python src/data_processing/prepare_clause_extraction_data.py
 ```
 
-### Default Parameters
+This script will:
 
-- The default model is `google/gemma-3-4b-it` (instruction-tuned version)
-- Default question (if not specified): "Please extract the document name, parties, agreement date, effective date, expiration date, renewal term, notice period to terminate renewal, and governing law from the contract. Return the information in a JSON format."
-- Default max length: 1024 tokens
+- Process the CSV files in the `data/CUAD_v1/subcategories/` directory
+- Extract clause texts and their labels
+- Format the data for training
+- Save the processed data as JSONL files in the `data/clause_extraction/` directory
 
-### Example
+## Training Models
+
+To train the models:
 
 ```bash
-python src/gemma_inference.py --prompt "This agreement is made on January 15, 2023 between ABC Corp and XYZ Inc. The effective date is February 1, 2023 and it expires on January 31, 2024. The agreement will automatically renew for additional 1-year terms unless terminated with 30 days notice. This agreement is governed by the laws of the State of California."
+python src/training/train_clause_extraction_models.py --category all
 ```
+
+Options:
+
+- `--category`: Specify which category to train ("all" or one of the five categories)
+- `--epochs`: Number of training epochs (default: 3)
+- `--batch_size`: Batch size for training (default: 4)
+- `--eval_steps`: Steps between evaluations (default: 500)
+- `--save_steps`: Steps between model saves (default: 1000)
+- `--warmup_steps`: Warmup steps (default: 500)
+- `--weight_decay`: Weight decay (default: 0.01)
+- `--logging_steps`: Steps between logs (default: 100)
+
+The trained models will be saved in the `models/` directory.
+
+## Inference
+
+To extract clauses from a contract:
+
+```bash
+python src/inference/clause_extraction_inference.py --file path/to/contract.txt --output results.json
+```
+
+Options:
+
+- `--file`: Path to the input contract file (required)
+- `--category`: Specific category to extract (optional, extracts all categories if not specified)
+- `--output`: Path to the output JSON file (default: extracted_clauses.json)
+
+The extracted clauses will be saved in the specified output file in JSON format.
+
+## Example Output
+
+```json
+{
+  "intellectual_property_licensing": [
+    {
+      "label": "License Grant",
+      "clause_text": "The Licensee is granted a license to use the software for internal business..."
+    },
+    {
+      "label": "IP Ownership Assignment",
+      "clause_text": "All intellectual property created during the engagement shall be assigned to the Client..."
+    }
+  ],
+  "competition_exclusivity": [
+    {
+      "label": "Non-Compete",
+      "clause_text": "Vendor shall not engage in any business that competes with Client for a period of 2 years..."
+    }
+  ]
+}
+```
+
+## License
+
+[Specify the license under which this project is released]
+
+## Acknowledgments
+
+This project uses the [CUAD dataset](https://www.atticusprojectai.org/cuad) and [Google's Gemma 3 models](https://ai.google.dev/gemma).

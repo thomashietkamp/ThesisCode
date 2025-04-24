@@ -1,0 +1,11 @@
+AGENT_PROMPT_TMPL: |
+  You are the {agent} agent.
+  From the contract below, extract every clause of this type
+  and return only one JSON object with key "clauses". Each element must be:
+    • "global_start": character start offset
+    • "global_end": character end offset
+
+  If none exist, return "clauses":[] as JSON object and nothing else.
+
+  <CONTRACT_TEXT>
+  {contract}

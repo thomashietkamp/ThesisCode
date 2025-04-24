@@ -1,6 +1,0 @@
-{
-  "text_length": 159597,
-  "chunk_count": 213,
-  "vector_store": "faiss",
-  "vector_store_path": "output/vector_stores/CytodynInc_20200109_10-Q_EX-10.5_11941634_EX-10.5_License Agreement"
-}
