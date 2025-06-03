@@ -1,0 +1,13 @@
+{
+    "w1": {
+      "draft": "Draft report…",    
+      "feedback": "Validator feedback…",
+      "final_report": "Final Risk Report for Contract 001:\n\n1. The “Termination For Convenience” clause allows either party to terminate at any time, exposing the client to unexpected service interruptions.\n2. The “Exclusivity” clause restricts the vendor from working with competitors, potentially limiting future negotiation leverage.\n\n**Recommendations:**\n- Add a minimum notice period (e.g. 90 days) to the termination clause.\n- Narrow the exclusivity scope to specific products or regions."
+    },
+    "w2": {
+      "draft": "Alternate draft…",
+      "feedback": "Alternate validator feedback…",
+      "final_report": "Final Risk Report for Contract 001 (Variant):\n\n1. The “Cap On Liability” clause limits vendor liability to €100,000 but lacks an explicit carve-out for gross negligence.\n2. The “Warranty Duration” is unspecified, risking ambiguous post-delivery support obligations.\n\n**Recommendations:**\n- Introduce a gross-negligence exception to the liability cap.\n- Define a fixed warranty period (e.g. 12 months) with clear start/end dates."
+    }
+  }
+  

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Review Vote - {{ vote.contract_id }}</title>
+  <link rel="icon" href="{{ url_for('static', filename='VU_logo.jpg') }}" type="image/jpeg">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+  <!-- Reusing styles from vote.html by linking to it, or copy-pasting relevant styles. -->
+  <!-- For simplicity in this example, I'll copy relevant styles. Consider a shared CSS file. -->
+  <style>
+    /* Global Resets and Base Styles (condensed from vote.html) */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Roboto', sans-serif; background-color: #f4f7f9; color: #333; line-height: 1.6; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 2rem; }
+    .vote-page-container { background-color: #ffffff; padding: 2rem 2.5rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); width: 100%; max-width: 1300px; }
+    
+    /* Header Styling (from vote.html) */
+    .vote-header-main { text-align: left; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #e0e0e0; }
+    .header-content-wrapper { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
+    .contract-id-text { font-size: 1.2rem; color: #555; margin: 0; }
+    .contract-id-text strong { color: #333333; font-weight: 500; }
+    .view-pdf-link { display: inline-block; background-color: #444444; color: #ffffff; padding: 0.6rem 1.2rem; border-radius: 6px; text-decoration: none; font-size: 0.95rem; font-weight: 500; transition: background-color 0.2s ease, transform 0.15s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.07); }
+    .view-pdf-link:hover, .view-pdf-link:focus { background-color: #222222; color: #ffffff; text-decoration: none; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    @media (min-width: 576px) { .header-content-wrapper { flex-direction: row; justify-content: space-between; align-items: center; width: 100%; } .contract-id-text { font-size: 1.25rem; } }
+
+    /* Options Grid and Card Styling (adapted for review) */
+    .options-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 450px), 1fr)); gap: 2.5rem; margin-bottom: 2.5rem; align-items: start; }
+    .option-card-enhanced { display: flex; flex-direction: column; background-color: #fff; border: 2px solid #e0e0e0; border-radius: 10px; padding: 1.5rem; }
+    .option-card-enhanced.chosen-option { border-color: #333333; background-color: #f5f5f5; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); }
+    .option-card-header { margin-bottom: 1.5rem; text-align: center; }
+    .option-card-header h2 { font-size: 1.75rem; font-weight: 500; color: #34495e; }
+    .markdown-content-display { width: 100%; min-height: 200px; background-color: #fdfdfd; border: 1px solid #ccd1d5; border-radius: 6px; padding: 1.5rem; font-size: 1rem; line-height: 1.7; color: #222; flex-grow: 1; margin-bottom: 1.5rem; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    /* Include basic markdown element styling from vote.html's CSS here */
+    .markdown-content-display h1, .markdown-content-display h2, .markdown-content-display h3, .markdown-content-display h4, .markdown-content-display h5, .markdown-content-display h6 { margin-top: 1.5em; margin-bottom: 0.75em; font-weight: 600; line-height: 1.3; color: #2c3e50; }
+    .markdown-content-display h1:first-child, .markdown-content-display h2:first-child, .markdown-content-display h3:first-child, .markdown-content-display h4:first-child, .markdown-content-display h5:first-child, .markdown-content-display h6:first-child { margin-top: 0; }
+    .markdown-content-display h1 { font-size: 2em; } .markdown-content-display h2 { font-size: 1.75em; } .markdown-content-display h3 { font-size: 1.5em; } .markdown-content-display h4 { font-size: 1.25em; } .markdown-content-display h5 { font-size: 1em; } .markdown-content-display h6 { font-size: 0.9em; color: #555; }
+    .markdown-content-display p { margin-bottom: 1.25em; } .markdown-content-display p:last-child { margin-bottom: 0; }
+    .markdown-content-display ul, .markdown-content-display ol { margin-bottom: 1.25em; padding-left: 2em; }
+    .markdown-content-display li { margin-bottom: 0.5em; }
+    .markdown-content-display blockquote { margin: 0 0 1.25em 0; padding: 0.5em 1.5em; border-left: 4px solid #333333; background-color: #f8f9fa; color: #555; font-style: italic; }
+    .markdown-content-display blockquote p:last-child { margin-bottom: 0; }
+    .markdown-content-display pre { background-color: #2d2d2d; color: #f8f8f2; padding: 1em; border-radius: 6px; overflow-x: auto; margin-bottom: 1.25em; font-family: 'Source Code Pro', monospace; font-size: 0.95em; line-height: 1.5; }
+    .markdown-content-display code { font-family: 'Source Code Pro', monospace; background-color: #e9ecef; color: #c7254e; padding: 0.2em 0.4em; border-radius: 3px; font-size: 0.9em; }
+    .markdown-content-display pre code { background-color: transparent; color: inherit; padding: 0; font-size: inherit; }
+    .markdown-content-display a { color: #333333; text-decoration: none; } .markdown-content-display a:hover { text-decoration: underline; }
+    .markdown-content-display hr { border: 0; height: 1px; background-color: #ddd; margin: 2em 0; }
+    .markdown-content-display table { width: 100%; border-collapse: collapse; margin-bottom: 1.25em; border: 1px solid #ddd; }
+    .markdown-content-display th, .markdown-content-display td { border: 1px solid #ddd; padding: 0.75em; text-align: left; }
+    .markdown-content-display th { background-color: #f8f9fa; font-weight: 600; }
+    
+    .option-card-footer { text-align: center; padding-top: 1rem; font-weight: 500; color: #333333; margin-top: auto; border-top: 1px solid #e9ecef; }
+    .option-card-enhanced.chosen-option .option-card-footer { font-weight: 700; color: #000000; }
+    .option-card-enhanced.chosen-option .option-card-footer::before { content: "✓ Your Choice: "; font-weight: bold; }
+
+    .page-actions { text-align: center; margin-top: 2rem; }
+    .page-actions a {
+      display: inline-block;
+      background-color: #000000; /* Real black for button */
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 500;
+      padding: 0.7rem 1.5rem;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background-color 0.2s ease;
+      margin: 0 0.5rem;
+    }
+    .page-actions a:hover {
+      background-color: #222222; /* Slightly lighter black on hover */
+    }
+    .page-actions a.secondary {
+      background-color: #000000; /* Real black for secondary button */
+    }
+    .page-actions a.secondary:hover {
+      background-color: #222222; /* Slightly lighter black on hover */
+    }
+  </style>
+</head>
+<body>
+  <div class="vote-page-container">
+    <header class="vote-header-main">
+      <div class="header-content-wrapper">
+        <p class="contract-id-text">Reviewing Vote for Contract ID: <strong>{{ vote.contract_id }}</strong></p>
+        {% if pdf_url %}
+          <a href="{{ pdf_url }}" target="_blank" class="view-pdf-link">View Full Contract PDF</a>
+        {% endif %}
+      </div>
+    </header>
+
+    <!-- Hidden textareas for Markdown source -->
+    <textarea id="markdown-source-w1" style="display:none;">{{ vote.w1 }}</textarea>
+    <textarea id="markdown-source-w2" style="display:none;">{{ vote.w2 }}</textarea>
+
+    <div class="options-grid">
+      <div class="option-card-wrapper">
+        <div class="option-card-enhanced {% if vote.winner == 'w1' %}chosen-option{% endif %}">
+          <div class="option-card-header">
+            <h2>Option 1</h2>
+          </div>
+          <div class="markdown-content-display" id="markdown-render-w1"></div>
+          <div class="option-card-footer">
+            {{ "Option 1" if vote.winner != 'w1' else "This was your choice" }}
+          </div>
+        </div>
+      </div>
+
+      <div class="option-card-wrapper">
+        <div class="option-card-enhanced {% if vote.winner == 'w2' %}chosen-option{% endif %}">
+          <div class="option-card-header">
+            <h2>Option 2</h2>
+          </div>
+          <div class="markdown-content-display" id="markdown-render-w2"></div>
+          <div class="option-card-footer">
+             {{ "Option 2" if vote.winner != 'w2' else "This was your choice" }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-actions">
+      <a href="{{ url_for('view_history') }}">Back to History</a>
+      <a href="{{ url_for('show_vote_item', navigation_action='next') }}" class="secondary">Continue Voting (Next Contract)</a>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      marked.use({ gfm: true, pedantic: false, breaks: false, sanitize: false });
+
+      try {
+        const markdownSourceW1 = document.getElementById('markdown-source-w1').value;
+        const renderTargetW1 = document.getElementById('markdown-render-w1');
+        if (markdownSourceW1 && renderTargetW1) {
+          renderTargetW1.innerHTML = marked.parse(markdownSourceW1);
+        } else { console.error('Source or target for W1 not found.'); }
+      } catch (e) {
+        console.error('Error rendering Markdown for W1:', e);
+        const renderTargetW1 = document.getElementById('markdown-render-w1');
+        if(renderTargetW1) renderTargetW1.innerHTML = "<p>Error rendering content.</p>";
+      }
+
+      try {
+        const markdownSourceW2 = document.getElementById('markdown-source-w2').value;
+        const renderTargetW2 = document.getElementById('markdown-render-w2');
+        if (markdownSourceW2 && renderTargetW2) {
+          renderTargetW2.innerHTML = marked.parse(markdownSourceW2);
+        } else { console.error('Source or target for W2 not found.'); }
+      } catch (e) {
+        console.error('Error rendering Markdown for W2:', e);
+        const renderTargetW2 = document.getElementById('markdown-render-w2');
+        if(renderTargetW2) renderTargetW2.innerHTML = "<p>Error rendering content.</p>";
+      }
+    });
+  </script>
+</body>
+</html> 

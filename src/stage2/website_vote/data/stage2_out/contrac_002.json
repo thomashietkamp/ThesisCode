@@ -1,0 +1,13 @@
+{
+    "w1": {
+      "draft": "Draft report…",
+      "feedback": "Validator feedback…",
+      "final_report": "Final Risk Report for Contract 002:\n\n1. The “Change Of Control” clause requires written consent, which may delay strategic acquisitions.\n2. The “Non-Disparagement” clause is mutual but omits language around social media disclosures.\n\n**Recommendations:**\n- Add an automatic approval mechanism if no response within 30 days.\n- Expand non-disparagement to include online and third-party communications."
+    },
+    "w2": {
+      "draft": "Alternate draft…",
+      "feedback": "Alternate validator feedback…",
+      "final_report": "Final Risk Report for Contract 002 (Variant):\n\n1. The “Revenue/Profit Sharing” clause ties payments to quarterly profits, which may fluctuate and strain cash flow.\n2. The “Audit Rights” clause grants annual audits but is silent on auditor qualifications.\n\n**Recommendations:**\n- Cap profit-sharing at a fixed percentage to stabilize payments.\n- Specify that audits must be conducted by a “Big 4” accounting firm."
+    }
+  }
+  

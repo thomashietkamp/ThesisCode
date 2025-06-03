@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Done!</title>
+  <link rel="icon" href="{{ url_for('static', filename='VU_logo.jpg') }}" type="image/jpeg">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Roboto', sans-serif; background-color: #f4f7f9; color: #333; line-height: 1.6; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; text-align: center; }
+    .container { background-color: #ffffff; padding: 2.5rem 3rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); width: 100%; max-width: 600px; }
+    h1 { color: #2c3e50; margin-bottom: 1rem; font-size: 2.2rem; }
+    p { font-size: 1.1rem; margin-bottom: 1.5rem; }
+    .actions a {
+      display: inline-block;
+      background-color: #000000; /* Real black for button */
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 500;
+      padding: 0.7rem 1.5rem;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background-color 0.2s ease;
+      margin: 0.5rem;
+    }
+    .actions a:hover {
+      background-color: #222222; /* Slightly lighter black on hover */
+    }
+    .actions a.secondary {
+      background-color: #000000; /* Real black for secondary button */
+    }
+    .actions a.secondary:hover {
+      background-color: #222222; /* Slightly lighter black on hover */
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>All Done!</h1>
+    <p>WOW! All comparisons are already done. Thank you for voting. Your contribution is valuable to this Master Thesis.</p>
+    <div class="actions">
+        {% if session.get('vote_history') %}
+            <a href="{{ url_for('view_history') }}">View Your Voting History</a>
+        {% endif %}
+        <!-- <a href="{{ url_for('index') }}" class="secondary">Start Over</a> -->
+    </div>
+  </div>
+</body>
+</html> 
