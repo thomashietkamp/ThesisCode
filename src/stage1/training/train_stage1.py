@@ -34,7 +34,7 @@ from functools import partial
 import numpy as np
 import wandb
 import torch
-from datasets import load_dataset
+from datasets import load_dataset, concatenate_datasets
 from transformers import (
     AutoTokenizer,
     AutoModelForCausalLM,
@@ -50,13 +50,12 @@ from huggingface_hub import login
 from sklearn.metrics import f1_score, precision_score, recall_score
 
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
-
-login(token="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")
 
 # -------------------- constants you rarely touch -------------------- #
 MAX_LENGTH = 5000           # Gemma-3-4B-IT context window
-MICRO_BATCH = 4               # fits on an A100-80 GB with 4-bit weights
+MICRO_BATCH = 1               # fits on an A100-80 GB with 4-bit weights
 GRAD_ACC = 16            # 4 × 8 = 32 effective batch
 EPOCHS = 3
 LR = 1e-4
@@ -91,7 +90,7 @@ def make_preprocess(tokenizer):
         # This ensures the output is parsable by metrics functions (like _safe_json)
         # and aligns with the prompt's expectation of an "empty list" or items
         # "in double quotes, separated by commas".
-        target_str = json.dumps(example["target"], ensure_ascii=False)
+        target_str = example["target"]
 
         # Tokenize the target
         t = tokenizer(target_str, add_special_tokens=False)
@@ -208,23 +207,12 @@ def main():
     ap.add_argument("--val_jsonl",   required=True)
     ap.add_argument("--agent_name",  required=True)
     ap.add_argument("--output_dir",  required=True, type=pathlib.Path)
+    ap.add_argument("--true_false_ratio", type=str, default="5:3",
+                    help="Ratio of has_ans:True to has_ans:False samples, e.g., 3:1. Default is 1:0 (all True).")
     # change if needed
-    ap.add_argument("--model_name",  default="Qwen/Qwen3-1.7B")
+    ap.add_argument("--model_name",  default="Qwen/Qwen3-8B")
     ap.add_argument("--dry_run_steps", type=int, default=0,
                     help=">0 = stop after N optimiser steps (smoke-test)")
-
-    # if get_ipython() is not None:
-    #     # means we are running in a notebook
-    #     print("Running in a notebook, using default arguments for train_jsonl, val_jsonl, agent_name, and output_dir")
-    #     args = ap.parse_args([
-    #         '--train_jsonl', 'train_small.jsonl',
-    #         '--val_jsonl', 'val_small.jsonl',
-    #         '--agent_name', 'Competition_Exclusivity',
-    #                         '--output_dir', 'checkpoints/competition_exclusivity',
-    #                         '--dry_run_steps', '10'
-    #     ])
-    # else:
-
     args = ap.parse_args()
 
     if args.dry_run_steps:
@@ -265,10 +253,9 @@ def main():
         "epochs": EPOCHS,
         "lr": LR,
     })
-    wandb.watch(model, log="all", log_freq=25)
 
     lora_cfg = LoraConfig(
-        r=16, lora_alpha=32, lora_dropout=0.05,
+        r=8, lora_alpha=16, lora_dropout=0.05,
         bias="none", target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
                                      "gate_proj", "up_proj", "down_proj"],
         task_type="CAUSAL_LM"
@@ -276,12 +263,56 @@ def main():
     model = get_peft_model(model, lora_cfg)
     model = model.to(torch.bfloat16)
 
-    train_ds = load_jsonl(args.train_jsonl).map(make_preprocess(tok),
-                                                remove_columns=["id", "input", "target"])
+    # Parse the ratio string
+    ratio_parts = list(map(int, args.true_false_ratio.split(':')))
+    true_ratio, false_ratio = ratio_parts[0], ratio_parts[1]
+
+    def filter_by_ratio(dataset, true_ratio, false_ratio):
+        true_samples = dataset.filter(
+            lambda example: example["has_ans"] is True)
+        false_samples = dataset.filter(
+            lambda example: example["has_ans"] is False)
+
+        num_true_samples = len(true_samples)
+        num_false_samples = len(false_samples)
+
+        if false_ratio == 0:  # only true samples
+            return true_samples
+
+        if true_ratio == 0:  # only false samples
+            # Adjust num_false_samples if it exceeds dataset size
+            # effectively all false samples
+            num_false_to_keep = min(num_false_samples, num_false_samples)
+            return false_samples.select(range(num_false_to_keep))
+
+        # Determine the number of false samples to keep based on the ratio
+        # and the number of available true samples.
+        num_false_to_keep = (num_true_samples / true_ratio) * false_ratio
+        # Cannot keep more false samples than available
+        num_false_to_keep = int(min(num_false_to_keep, num_false_samples))
+
+        # If we need to reduce true samples to maintain ratio (because not enough false ones)
+        num_true_to_keep = num_true_samples
+        if num_false_to_keep < (num_true_samples / true_ratio) * false_ratio:
+            num_true_to_keep = int(
+                (num_false_to_keep / false_ratio) * true_ratio)
+            num_true_to_keep = min(num_true_to_keep, num_true_samples)
+
+        # Select the desired number of samples
+        selected_true = true_samples.select(range(num_true_to_keep))
+        selected_false = false_samples.select(range(num_false_to_keep))
+
+        return concatenate_datasets([selected_true, selected_false]).shuffle(seed=42)
+
+    train_ds_raw = load_jsonl(args.train_jsonl)
+    train_ds = filter_by_ratio(train_ds_raw, true_ratio, false_ratio).map(
+        make_preprocess(tok), remove_columns=["id", "input", "target", "has_ans"])
+
     # Select only the first sample
     # train_ds = train_ds.select([0])
-    val_ds = load_jsonl(args.val_jsonl).map(make_preprocess(tok),
-                                            remove_columns=["id", "input", "target"])
+    val_ds_raw = load_jsonl(args.val_jsonl)
+    val_ds = filter_by_ratio(val_ds_raw, true_ratio, false_ratio).map(
+        make_preprocess(tok), remove_columns=["id", "input", "target", "has_ans"])
     # val_ds = val_ds.select([0])
 
     targs = Seq2SeqTrainingArguments(
@@ -295,11 +326,11 @@ def main():
         report_to="wandb",
         lr_scheduler_type="cosine",
         warmup_ratio=0.05,
-        logging_steps=5,
+        logging_steps=GRAD_ACC,
         eval_strategy="steps",
-        eval_steps=20,
+        eval_steps=3 * GRAD_ACC,
         save_strategy="steps",
-        save_steps=20,
+        save_steps=3 * GRAD_ACC,
         load_best_model_at_end=False,
         metric_for_best_model="eval_loss",
         greater_is_better=False,
@@ -312,11 +343,13 @@ def main():
         bf16_full_eval=True,
         predict_with_generate=False,
         generation_max_length=MAX_LENGTH,
+        optim="adamw_torch",
     )
 
-    data_collator = DataCollatorWithPadding(
+    data_collator = DataCollatorForSeq2Seq(
         tokenizer=tok,
         padding=True,
+        max_length=MAX_LENGTH,
         return_tensors="pt"
     )
 
