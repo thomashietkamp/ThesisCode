@@ -165,21 +165,12 @@ lora_alpha: 64
 
 ```json
 {
-  "contract_id": "example_contract_001",
-  "extracted_clauses": [
-    {
-      "text": "Clause text...",
-      "category": "competition_exclusivity",
-      "confidence": 0.95,
-      "start_position": 1234,
-      "end_position": 1456
-    }
-  ],
-  "metadata": {
-    "model_name": "competition_exclusivity_8b",
-    "processing_time": 2.34,
-    "total_tokens": 1500
-  }
+  "CONTRACT_ID": [
+    "Provider shall not engage in any business that competes with the Services offered under this Agreement.",
+    "This Agreement shall terminate automatically if either party is acquired by a competitor.",
+    "Provider must maintain comprehensive liability insurance coverage of at least $2M.",
+    "All confidential information shall be returned within 30 days of termination."
+  ]
 }
 ```
 

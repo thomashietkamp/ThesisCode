@@ -104,12 +104,11 @@ The system uses Qwen-based models fine-tuned with LoRA (Low-Rank Adaptation) for
 
 ```json
 {
-  "contract_id": "example_contract",
-  "predictions": {
-    "intellectual_property": ["clause1", "clause2"],
-    "competition_exclusivity": ["clause3"]
-  },
-  "confidence_scores": {...}
+  "CONTRACT_ID": [
+    "Provider shall not engage in any business that competes with the Services offered under this Agreement.",
+    "This Agreement shall terminate automatically if either party is acquired by a competitor.",
+    "Provider must maintain comprehensive liability insurance coverage of at least $2M."
+  ]
 }
 ```
 
@@ -117,13 +116,17 @@ The system uses Qwen-based models fine-tuned with LoRA (Low-Rank Adaptation) for
 
 ```json
 {
-  "contract_analysis": {
-    "summary": "Comprehensive analysis...",
-    "legal_risks": [...],
-    "recommendations": [...],
-    "committee_consensus": 0.85
-  },
-  "variants": [...]
+  "0": {
+    "cfg": {
+      "persona": "neutral_legal",
+      "model_id": "qwen/qwen3-14b:free",
+      "self_critique": false,
+      "debate": false
+    },
+    "coordinator_draft": "Analysis plan focusing on termination rights and assignment restrictions...",
+    "reasoner_analysis": "### Legal Analysis Report...",
+    "final_report": "# Legal Review Report\n\n## Summary of Key Clauses\n- Termination rights\n- Assignment restrictions\n- Liability limitations..."
+  }
 }
 ```
 

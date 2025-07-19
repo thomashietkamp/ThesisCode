@@ -229,15 +229,10 @@ Based on three-way comparison study:
 
 ```json
 {
-  "contract_id": "example_contract_001",
-  "extracted_clauses": [
-    {
-      "text": "Vendor shall not engage in any business that competes...",
-      "category": "competition_exclusivity",
-      "confidence": 0.95,
-      "start_position": 1234,
-      "end_position": 1456
-    }
+  "CONTRACT_ID": [
+    "Vendor shall not engage in any business that competes with the Services...",
+    "This Agreement shall terminate automatically upon acquisition...",
+    "Provider shall maintain comprehensive liability insurance..."
   ]
 }
 ```
@@ -246,10 +241,17 @@ Based on three-way comparison study:
 
 ```json
 {
-  "final_report": "## Summary of Key Clauses\n- Non-compete clause (Section 8.2)...",
-  "legal_risks": ["Broad non-compete scope may be unenforceable..."],
-  "recommendations": ["Consider narrowing geographic scope..."],
-  "committee_consensus": 0.85
+  "0": {
+    "cfg": {
+      "persona": "neutral_legal",
+      "model_id": "qwen/qwen3-14b:free",
+      "self_critique": false,
+      "debate": false
+    },
+    "coordinator_draft": "Analysis plan focusing on termination rights...",
+    "reasoner_analysis": "### Legal Analysis Report...",
+    "final_report": "# Legal Review Report\n\n## Summary of Key Clauses\n- Non-compete provisions\n- Termination rights\n- Liability limitations..."
+  }
 }
 ```
 
