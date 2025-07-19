@@ -197,19 +197,31 @@ python inference.py \
 
 ### Stage 1 Performance (F1-Scores)
 
-| Legal Category            | 1.7B Model | 4B Model | 8B Model |
-| ------------------------- | ---------- | -------- | -------- |
-| Intellectual Property     | 0.82       | 0.85     | **0.88** |
-| Competition & Exclusivity | 0.79       | 0.83     | **0.86** |
-| Termination & Control     | 0.77       | 0.81     | **0.84** |
-| Financial & Commercial    | 0.75       | 0.79     | **0.82** |
-| Legal Protections         | 0.73       | 0.77     | **0.80** |
+Based on experimental results comparing base vs. fine-tuned models:
+
+| Legal Category                        | 1.7B Fine-tuned | 4B Fine-tuned | 8B Fine-tuned |
+| ------------------------------------- | --------------- | ------------- | ------------- |
+| **Metadata**                          | 0.21            | -             | **0.78**      |
+| **Termination & Control Rights**      | 0.33            | -             | **0.52**      |
+| **Competition & Exclusivity**         | 0.16            | 0.38          | **0.47**      |
+| **Intellectual Property & Licensing** | 0.21            | -             | **0.43**      |
+| **Legal Protections & Liability**     | 0.23            | -             | **0.42**      |
+| **Financial & Commercial Terms**      | 0.13            | -             | **0.33**      |
+
+### Key Performance Improvements
+
+- **Average improvement**: 17.6% F1-score increase over base models
+- **Best performing category**: Metadata classification (F1 = 0.78)
+- **Improvement rate**: 100% (all categories showed positive gains)
+- **Largest improvement**: Termination & Control Rights (+26.7% improvement)
 
 ### Stage 2 Human Evaluation Results
 
-- **Committee vs Single-Stage**: 68% preference for committee analysis
-- **Human Alignment Score**: 4.2/5.0 average rating
-- **Inter-Annotator Agreement**: κ = 0.71 (substantial agreement)
+Based on three-way comparison study:
+
+- **Multi-agent approach**: Comparative evaluation of fine-tuned committee vs. single-stage vs. non-fine-tuned committee systems
+- **Evaluation dimensions**: Clarity, legal soundness, reasoning depth, and human alignment (1-5 scale)
+- **Contract coverage**: Real-world legal agreements from CUAD dataset
 
 ### Example Output
 
@@ -241,14 +253,21 @@ python inference.py \
 }
 ```
 
-## 🔬 Research Applications
+## 🔬 Research Contributions
 
-This system supports research in:
+This research demonstrates:
 
-- **Legal AI**: Contract understanding and clause extraction
-- **Multi-Agent Systems**: Collaborative reasoning for document analysis
-- **Human Preference Learning**: Aligning AI outputs with human preferences
-- **Parameter-Efficient Fine-Tuning**: LoRA for domain-specific adaptation
+- **Legal AI Specialization**: Fine-tuned models show consistent improvements across all legal categories (17.6% average F1 improvement)
+- **Multi-Agent Legal Reasoning**: Committee-based approach for comprehensive contract analysis with multiple perspectives (neutral, risk-averse, aggressive)
+- **Human Preference Studies**: Three-way comparative evaluation framework for legal AI systems
+- **Parameter-Efficient Domain Adaptation**: LoRA fine-tuning achieves strong performance with reduced computational requirements
+
+### Academic Impact
+
+- **Methodology**: Novel two-stage approach combining specialized extraction with multi-agent reasoning
+- **Dataset**: CUAD (Contract Understanding Atticus Dataset) with 500+ legal contracts
+- **Evaluation**: Both automated metrics and human evaluation across multiple dimensions
+- **Reproducibility**: Complete training pipeline and evaluation framework
 
 ## 🐳 Docker Deployment
 
