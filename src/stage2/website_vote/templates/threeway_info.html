@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three-Way Comparison - Master Thesis Project</title>
+    <link rel="icon" href="{{ url_for('static', filename='VU_logo.jpg') }}" type="image/jpeg">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Basic Reset */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f7f9;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #e0e0e0;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 15px;
+            font-size: 1.1rem;
+            color: #555;
+            text-align: center;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-container {
+            background-color: #ffffff;
+            padding: 2rem 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 900px;
+            text-align: left;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .info-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .info-header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-header .subtitle {
+            font-size: 1.1rem;
+            color: #666;
+            font-weight: 300;
+        }
+
+        .navigation-back {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .navigation-back a {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 400;
+        }
+
+        .navigation-back a:hover {
+            text-decoration: underline;
+        }
+
+        .info-content p {
+            margin-bottom: 1.25em;
+            font-size: 1.05rem;
+        }
+
+        .info-content strong {
+            font-weight: 500;
+            color: #333333;
+        }
+
+        .info-content ul {
+            margin-bottom: 1.25em;
+            padding-left: 2em;
+        }
+
+        .info-content ul li {
+            margin-bottom: 0.5em;
+        }
+
+        .highlight-box {
+            background-color: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin: 1.5rem 0;
+        }
+
+        .rating-dimensions {
+            background-color: #e8f5e8;
+            border-left: 4px solid #27ae60;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin: 1.5rem 0;
+        }
+
+        .rating-dimensions h3 {
+            color: #27ae60;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .form-actions {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .proceed-button {
+            background-color: #000000;
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: 500;
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .proceed-button:hover,
+        .proceed-button:focus {
+            background-color: #222222;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .proceed-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Button loading state */
+        .btn-loading {
+            color: transparent !important;
+            pointer-events: none;
+        }
+
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .checkbox-container {
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            margin-right: 0.75rem;
+            width: 1.2em;
+            height: 1.2em;
+            transform: translateY(-1px);
+        }
+
+        .checkbox-container label {
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .error-message {
+            color: #d9534f;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .approach-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .approach-item {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .approach-item h4 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .approach-item p {
+            font-size: 0.9rem;
+            color: #666;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .info-container { 
+                padding: 1.5rem; 
+                max-width: 95%; 
+            }
+            .info-header h1 { 
+                font-size: 1.8rem; 
+            }
+            .info-content p { 
+                font-size: 1rem; 
+            }
+            .approach-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div style="text-align: center;">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Starting three-way comparison...</div>
+        </div>
+    </div>
+
+    <div class="info-container">
+
+
+        <header class="info-header">
+            <h1>Three-Way Analysis Comparison</h1>
+            <div class="subtitle">Compare AI contract analysis approaches</div>
+        </header>
+
+        <div class="info-content">
+            <p>Welcome! This is an comparison study that evaluates <strong>three different AI approaches</strong> for contract analysis. Your expertise will help determine which methods produce the most useful and accurate results.</p>
+
+            <p><strong>Your Task:</strong></p>
+            <ul>
+                <li>Review the contract summary and, if necessary, the full contract document</li>
+                <li>Compare three AI-generated analyses side by side</li>
+                <li>Select the best overall analysis</li>
+                <li>Rate each analysis on four key dimensions (1-5 scale)</li>
+            </ul>
+
+            <div class="rating-dimensions">
+                <h3>Rating Dimensions</h3>
+                <ul>
+                    <li><strong>Clarity:</strong> How clear and understandable is the analysis?</li>
+                    <li><strong>Legal Soundness:</strong> How legally accurate and reliable?</li>
+                    <li><strong>Reasoning Depth:</strong> How thorough and detailed?</li>
+                    <li><strong>Human Alignment:</strong> How well does it match what a human lawyer would focus on?</li>
+                </ul>
+            </div>
+
+            <p><strong>Instructions:</strong></p>
+            <p>Focus on which analysis would be most <strong>useful to a legal practitioner</strong>. Consider accuracy, clarity, and practical value. Each analysis will be rated independently, then you'll select the overall winner.</p>
+
+            <p>All data is collected anonymously for academic research. Your thoughtful evaluations are essential for advancing AI-powered legal analysis tools. You can do as many evaluations as you want and you can stop at any time.</p>
+
+            <form action="{{ url_for('start_threeway_comparison') }}" method="post" id="info-form">
+                {% if error_message %}
+                    <p class="error-message">{{ error_message }}</p>
+                {% endif %}
+                <div class="checkbox-container">
+                    <input type="checkbox" id="confirm_checkbox" name="confirm_checkbox" value="confirmed" required>
+                    <label for="confirm_checkbox">I understand the task and agree to participate in this three-way comparison study</label>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="proceed-button" id="proceed-btn">Start Three-Way Comparison</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showLoading() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.classList.add('show');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkbox = document.getElementById('confirm_checkbox');
+            const proceedButton = document.getElementById('proceed-btn');
+            const form = document.getElementById('info-form');
+
+            // Disable button until checkbox is checked
+            proceedButton.disabled = !checkbox.checked;
+            checkbox.addEventListener('change', function() {
+                proceedButton.disabled = !this.checked;
+            });
+
+            // Show loading state on form submission
+            form.addEventListener('submit', function(event) {
+                if (checkbox.checked) {
+                    proceedButton.classList.add('btn-loading');
+                    proceedButton.disabled = true;
+                    showLoading();
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

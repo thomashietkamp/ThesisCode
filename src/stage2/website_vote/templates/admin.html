@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Thesis Voting System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+        .dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 1.1em;
+            margin-top: 10px;
+        }
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        .btn-success {
+            background-color: #27ae60;
+        }
+        .btn-success:hover {
+            background-color: #219a52;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background-color: #27ae60;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            transition: width 0.3s ease;
+        }
+    </style>
+    <script>
+        function refreshStats() {
+            fetch('{{ url_for("admin_status") }}?key={{ request.args.get("key") }}')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('total-votes').textContent = data.total_votes;
+                    document.getElementById('unique-users').textContent = data.unique_users;
+                    document.getElementById('uptime').textContent = Math.floor(data.uptime_seconds / 3600) + ' hours';
+                })
+                .catch(error => console.error('Error refreshing stats:', error));
+        }
+        
+        setInterval(refreshStats, 30000); // Refresh every 30 seconds
+    </script>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1><span class="status-indicator"></span>Thesis Voting System - Admin Dashboard</h1>
+            <p>Real-time monitoring and statistics for the voting collection process</p>
+            <div style="margin-top: 20px;">
+                <a href="{{ url_for('admin_export') }}?key={{ request.args.get('key') }}" class="btn btn-success">📁 Export All Data</a>
+                <button onclick="refreshStats()" class="btn">🔄 Refresh Stats</button>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div id="total-votes" class="stat-number">{{ stats.total_votes }}</div>
+                <div class="stat-label">Total Votes Cast</div>
+            </div>
+            <div class="stat-card">
+                <div id="unique-users" class="stat-number">{{ stats.unique_users }}</div>
+                <div class="stat-label">Unique Participants</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.total_contracts }}</div>
+                <div class="stat-label">Total Contracts</div>
+            </div>
+            <div class="stat-card">
+                <div id="uptime" class="stat-number">{{ stats.uptime.split(':')[0] }}h</div>
+                <div class="stat-label">System Uptime</div>
+            </div>
+        </div>
+
+        {% if stats.total_votes == 0 %}
+        <div class="warning">
+            ⚠️ <strong>No votes collected yet.</strong> Make sure participants can access the voting system.
+        </div>
+        {% elif stats.unique_users > 0 %}
+        <div class="success">
+            ✅ <strong>System is collecting data successfully!</strong> {{ stats.unique_users }} participants have submitted {{ stats.total_votes }} votes.
+        </div>
+        {% endif %}
+
+        <div class="section">
+            <h2>📊 Contract Voting Progress</h2>
+            {% if stats.votes_per_contract %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Contract ID</th>
+                        <th>Votes Collected</th>
+                        <th>Progress</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contract in stats.votes_per_contract[:20] %}
+                    <tr>
+                        <td>{{ contract.contract_id }}</td>
+                        <td>{{ contract.vote_count }}</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ (contract.vote_count / stats.unique_users * 100) if stats.unique_users > 0 else 0 }}%"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>No contract voting data available yet.</p>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h2>🔄 Recent Activity</h2>
+            {% if stats.recent_votes %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>User Session</th>
+                        <th>Contract</th>
+                        <th>Decision</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vote in stats.recent_votes %}
+                    <tr>
+                        <td>{{ vote.user_session[:8] }}...</td>
+                        <td>{{ vote.contract_id }}</td>
+                        <td>{{ vote.winner_key }}</td>
+                        <td>{{ vote.voted_at }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>No recent activity.</p>
+            {% endif %}
+        </div>
+
+        {% if stats.unclear_votes %}
+        <div class="section">
+            <h2>❓ Contracts with "Unclear" Votes</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Contract ID</th>
+                        <th>Unclear Votes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in stats.unclear_votes %}
+                    <tr>
+                        <td>{{ item.contract_id }}</td>
+                        <td>{{ item.unclear_count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <div class="section">
+            <h2>🔀 Three-Way Comparison Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.threeway_total_votes }}</div>
+                    <div class="stat-label">Total Three-Way Votes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.threeway_unique_users }}</div>
+                    <div class="stat-label">Unique Three-Way Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">
+                        {% if stats.rating_averages and stats.rating_averages.avg_clarity %}
+                            {{ "%.1f"|format(stats.rating_averages.avg_clarity) }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </div>
+                    <div class="stat-label">Avg Clarity Rating</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">
+                        {% if stats.rating_averages and stats.rating_averages.avg_legal %}
+                            {{ "%.1f"|format(stats.rating_averages.avg_legal) }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </div>
+                    <div class="stat-label">Avg Legal Soundness</div>
+                </div>
+            </div>
+
+            {% if stats.threeway_winner_stats %}
+            <h3>Winner Distribution</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Analysis Source</th>
+                        <th>Wins</th>
+                        <th>Percentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for winner in stats.threeway_winner_stats %}
+                    <tr>
+                        <td>{{ winner.winner_source.title() }}</td>
+                        <td>{{ winner.count }}</td>
+                        <td>
+                            {% if stats.threeway_total_votes > 0 %}
+                                {{ "%.1f"|format((winner.count / stats.threeway_total_votes) * 100) }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>No three-way comparison data available yet.</p>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h2>🔧 System Health</h2>
+            <p><strong>Error Count:</strong> {{ stats.error_count }}</p>
+            <p><strong>Vote Count:</strong> {{ stats.vote_count }}</p>
+            <p><strong>System Uptime:</strong> {{ stats.uptime }}</p>
+            
+            {% if stats.error_count > 10 %}
+            <div class="warning">
+                ⚠️ High error count detected. Check application logs for issues.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html> 

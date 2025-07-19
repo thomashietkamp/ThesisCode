@@ -1,0 +1,10 @@
+{"prompt": "Analyze the following contract clause and identify its type: 'The parties agree to resolve any disputes through binding arbitration.'", "task": "contract_analysis"}
+{"prompt": "What are the key elements of a non-disclosure agreement?", "task": "legal_explanation"}
+{"prompt": "Draft a simple termination clause for an employment contract.", "task": "clause_drafting"}
+{"prompt": "Explain the difference between a warranty and an indemnity clause.", "task": "legal_comparison"}
+{"prompt": "Identify potential risks in this clause: 'Payment shall be made within 30 days of invoice receipt, subject to satisfactory completion of deliverables.'", "task": "risk_analysis"}
+{"prompt": "How would you modify this clause to be more favorable to the buyer: 'Seller warrants that goods will be free from defects for 90 days.'", "task": "clause_optimization"}
+{"prompt": "Analyze the enforceability of this non-compete clause: 'Employee agrees not to compete with Company for 2 years within a 50-mile radius.'", "task": "enforceability_analysis"}
+{"prompt": "What questions should be asked when reviewing a force majeure clause?", "task": "review_guidance"}
+{"prompt": "Create a liability limitation clause for a software licensing agreement.", "task": "clause_creation"}
+{"prompt": "Explain how intellectual property rights are typically handled in consulting agreements.", "task": "ip_explanation"} 

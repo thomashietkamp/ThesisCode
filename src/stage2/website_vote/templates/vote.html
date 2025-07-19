@@ -29,6 +29,70 @@
       padding: 2rem; /* Padding for the body */
     }
 
+    /* Loading overlay styles */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .loading-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #e0e0e0;
+      border-top: 5px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-text {
+      margin-top: 15px;
+      font-size: 1.1rem;
+      color: #555;
+      text-align: center;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Button loading state */
+    .btn-loading {
+      position: relative;
+      color: transparent !important;
+      pointer-events: none;
+    }
+
+    .btn-loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 20px;
+      height: 20px;
+      border: 2px solid #ffffff;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
     /* Main container for the voting interface */
     .vote-page-container {
       background-color: #ffffff;
@@ -37,6 +101,16 @@
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
       width: 100%;
       max-width: 1300px; /* Increased max-width for larger content area */
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* Header Styling */
@@ -321,13 +395,36 @@
     }
     .submit-vote-button:hover,
     .submit-vote-button:focus {
-      background-color: #222222; /* Slightly lighter black on hover/focus */
+      background-color: #222222; /* Darker shade on hover */
       transform: translateY(-2px);
       box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Adjusted shadow */
     }
     .submit-vote-button:active {
       transform: translateY(0);
       background-color: #333333; /* Dark grey for active state */
+    }
+
+    .unclear-vote-button {
+        background-color: #6c757d; /* Bootstrap secondary/grey color */
+        color: #ffffff;
+    }
+    .unclear-vote-button:hover {
+        background-color: #5a6268; /* Darker grey on hover */
+    }
+
+    .unclear-vote-button.selected {
+        background-color: #ffc107; /* A bright yellow/amber for selected */
+        color: #212529; /* Dark text for contrast on yellow */
+        border: 2px solid #e0a800; /* Darker yellow border */
+        box-shadow: 0 0 8px rgba(255, 193, 7, 0.5); /* Glow effect */
+    }
+
+    .submit-vote-button:disabled {
+        background-color: #adb5bd;
+        color: #6c757d;
+        cursor: not-allowed;
+        opacity: 0.7;
+        pointer-events: none;
     }
 
     /* Responsive adjustments */
@@ -446,6 +543,48 @@
             text-align: left; /* Align header content to the left */
         }
     }
+
+    /* Styles for Contract Summary Section */
+    .contract-summary-section {
+        margin: 2rem 0;
+        padding: 1.5rem;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #333333;
+    }
+    .contract-summary-section h3 {
+        margin-bottom: 1rem;
+        color: #2c3e50;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+    .contract-summary-text {
+        line-height: 1.7;
+        color: #444;
+        font-size: 1rem;
+    }
+    @media (max-width: 768px) {
+        .contract-summary-section {
+            margin: 1.5rem 0;
+            padding: 1rem;
+        }
+        .contract-summary-section h3 {
+            font-size: 1.25rem;
+        }
+        .contract-summary-text {
+            font-size: 0.95rem;
+        }
+    }
+
+    .unclear-message-banner {
+        background-color: #fff3cd; /* Light yellow, similar to Bootstrap warning */
+        color: #856404; /* Dark yellow text */
+        padding: 1rem;
+        border: 1px solid #ffeeba;
+        border-radius: .25rem;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -459,13 +598,31 @@
       </div>
     </header>
 
+    <!-- Contract Summary Section -->
+    <section class="contract-summary-section">
+      <h3>Contract Summary</h3>
+      <div class="contract-summary-text">
+        {{ summary }}
+      </div>
+    </section>
+
+    {% if is_marked_unclear %}
+      <div class="unclear-message-banner">
+        <p>You previously marked this comparison as unclear. You can choose an option or mark it as unclear again.</p>
+      </div>
+    {% endif %}
+
     <form action="{{ url_for('submit_vote') }}" method="post" class="vote-form-main">
       <input type="hidden" name="contract_id" value="{{ contract_id }}">
+      <input type="hidden" name="option1_key" value="{{ option1_key }}">
+      <input type="hidden" name="option2_key" value="{{ option2_key }}">
+      <input type="hidden" name="pair_identifier" value="{{ pair_identifier }}">
+      <input type="hidden" name="final_choice" id="final-choice-input" value="">
 
       <textarea id="markdown-source-w1" style="display:none;">{{ w1 }}</textarea>
       <textarea id="markdown-source-w2" style="display:none;">{{ w2 }}</textarea>
 
-      <div class="options-grid">
+      <div class="options-grid" id="options-grid-container">
         <div class="option-card-wrapper">
           <input type="radio" name="winner" value="w1" id="choose-w1" class="option-radio" required 
                  {% if voted_option == 'w1' %}checked{% endif %}>
@@ -498,7 +655,8 @@
       </div>
 
       <div class="form-actions">
-        <button type="submit" class="submit-vote-button">Submit Your Vote</button>
+        <button type="button" id="unclear-choice-btn" class="submit-vote-button unclear-vote-button">Mark as Unclear</button>
+        <button type="submit" id="submit-vote-btn" class="submit-vote-button">Submit Vote and Continue</button>
       </div>
     </form>
 
@@ -515,48 +673,230 @@
 
   </div>
 
+  <!-- Loading overlay for better UX -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div style="text-align: center;">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading...</div>
+    </div>
+  </div>
+
   <script>
+    // Performance optimization: show loading immediately on navigation
+    function showLoading(text = 'Loading...') {
+      const overlay = document.getElementById('loadingOverlay');
+      const loadingText = document.querySelector('.loading-text');
+      if (overlay && loadingText) {
+        loadingText.textContent = text;
+        overlay.classList.add('show');
+      }
+    }
+
+    function hideLoading() {
+      const overlay = document.getElementById('loadingOverlay');
+      if (overlay) {
+        overlay.classList.remove('show');
+      }
+    }
+
+    // Show loading on page navigation
     document.addEventListener('DOMContentLoaded', function() {
-      // Configure Marked.js (optional, but good for consistency)
-      // For example, if you want GitHub Flavored Markdown and smartypants:
-      marked.use({
-        gfm: true, // GitHub Flavored Markdown
-        pedantic: false,
-        breaks: false, // True to interpret single newlines as <br>
-        sanitize: false // IMPORTANT: IF THE MARKDOWN SOURCE IS NOT TRUSTED, YOU MUST SANITIZE IT.
-                       // For trusted internal content, false is okay.
-                       // For user-supplied content, use a sanitizer like DOMPurify:
-                       // Example: marked.parse(DOMPurify.sanitize(markdownText))
+      // Add loading to navigation links
+      const navLinks = document.querySelectorAll('.nav-button:not(.disabled)');
+      navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          if (!this.classList.contains('disabled')) {
+            const isNext = this.classList.contains('next-button');
+            showLoading(isNext ? 'Loading next contract...' : 'Loading previous contract...');
+          }
+        });
       });
 
-      try {
-        const markdownSourceW1 = document.getElementById('markdown-source-w1').value;
-        const renderTargetW1 = document.getElementById('markdown-render-w1');
-        if (markdownSourceW1 && renderTargetW1) {
-          renderTargetW1.innerHTML = marked.parse(markdownSourceW1);
-        } else {
-          console.error('Source or target for W1 not found.');
+      // Configure Marked.js for performance
+      marked.use({
+        gfm: true,
+        pedantic: false,
+        breaks: false,
+        sanitize: false
+      });
+
+      // Optimized markdown rendering with error handling
+      function renderMarkdown(sourceId, targetId) {
+        try {
+          const sourceElement = document.getElementById(sourceId);
+          const targetElement = document.getElementById(targetId);
+          
+          if (sourceElement && targetElement && sourceElement.value) {
+            targetElement.innerHTML = marked.parse(sourceElement.value);
+          } else if (targetElement) {
+            targetElement.innerHTML = "<p>No content available.</p>";
+          }
+        } catch (e) {
+          console.error(`Error rendering Markdown for ${targetId}:`, e);
+          const targetElement = document.getElementById(targetId);
+          if (targetElement) {
+            targetElement.innerHTML = "<p>Error rendering content.</p>";
+          }
         }
-      } catch (e) {
-        console.error('Error rendering Markdown for W1:', e);
-        const renderTargetW1 = document.getElementById('markdown-render-w1');
-        if(renderTargetW1) renderTargetW1.innerHTML = "<p>Error rendering content.</p>";
       }
 
-      try {
-        const markdownSourceW2 = document.getElementById('markdown-source-w2').value;
-        const renderTargetW2 = document.getElementById('markdown-render-w2');
-        if (markdownSourceW2 && renderTargetW2) {
-          renderTargetW2.innerHTML = marked.parse(markdownSourceW2);
+      // Render both markdown sections
+      renderMarkdown('markdown-source-w1', 'markdown-render-w1');
+      renderMarkdown('markdown-source-w2', 'markdown-render-w2');
+
+      // Prevent scroll jumping on option selection
+      const optionLabels = document.querySelectorAll('label.option-card-enhanced');
+      optionLabels.forEach(function(label) {
+        label.addEventListener('click', function(event) {
+          const scrollX = window.scrollX;
+          const scrollY = window.scrollY;
+          requestAnimationFrame(() => window.scrollTo(scrollX, scrollY));
+        });
+      });
+
+      // Enhanced form handling with loading states
+      const form = document.querySelector('.vote-form-main');
+      const radioW1 = document.getElementById('choose-w1');
+      const radioW2 = document.getElementById('choose-w2');
+      const unclearChoiceBtn = document.getElementById('unclear-choice-btn');
+      const submitVoteBtn = document.getElementById('submit-vote-btn');
+      const finalChoiceInput = document.getElementById('final-choice-input');
+      const optionsGridContainer = document.getElementById('options-grid-container');
+
+      function updateSubmitButtonState() {
+        if (radioW1?.checked || radioW2?.checked || unclearChoiceBtn?.classList.contains('selected')) {
+          if (submitVoteBtn) submitVoteBtn.disabled = false;
         } else {
-          console.error('Source or target for W2 not found.');
+          if (submitVoteBtn) submitVoteBtn.disabled = true;
         }
-      } catch (e) {
-        console.error('Error rendering Markdown for W2:', e);
-        const renderTargetW2 = document.getElementById('markdown-render-w2');
-        if(renderTargetW2) renderTargetW2.innerHTML = "<p>Error rendering content.</p>";
       }
+      
+      function styleOptionCardsForUnclear(isUnclearSelected) {
+        if (!optionsGridContainer) return;
+        optionsGridContainer.style.opacity = isUnclearSelected ? '0.6' : '1';
+        optionsGridContainer.style.pointerEvents = isUnclearSelected ? 'none' : 'auto';
+      }
+
+      if (form && radioW1 && radioW2 && unclearChoiceBtn && submitVoteBtn && finalChoiceInput && optionsGridContainer) {
+        // Initialize form state
+        submitVoteBtn.disabled = true;
+        
+        // Set initial state based on existing vote
+        if ("{{is_marked_unclear}}" === "True" && !radioW1.checked && !radioW2.checked) { 
+            unclearChoiceBtn.classList.add('selected');
+            finalChoiceInput.value = 'unclear';
+            styleOptionCardsForUnclear(true);
+        } else if (radioW1.checked) {
+            finalChoiceInput.value = 'w1';
+            styleOptionCardsForUnclear(false);
+        } else if (radioW2.checked) {
+            finalChoiceInput.value = 'w2';
+            styleOptionCardsForUnclear(false);
+        } else {
+            styleOptionCardsForUnclear(false);
+        }
+        updateSubmitButtonState();
+
+        // Optimized event handlers
+        radioW1.addEventListener('change', function() {
+          if (this.checked) {
+            finalChoiceInput.value = 'w1';
+            unclearChoiceBtn.classList.remove('selected');
+            radioW1.required = true; 
+            radioW2.required = true; 
+            styleOptionCardsForUnclear(false);
+          }
+          updateSubmitButtonState();
+        });
+
+        radioW2.addEventListener('change', function() {
+          if (this.checked) {
+            finalChoiceInput.value = 'w2';
+            unclearChoiceBtn.classList.remove('selected');
+            radioW1.required = true;
+            radioW2.required = true;
+            styleOptionCardsForUnclear(false);
+          }
+          updateSubmitButtonState();
+        });
+
+        unclearChoiceBtn.addEventListener('click', function() {
+          this.classList.toggle('selected');
+          if (this.classList.contains('selected')) {
+            finalChoiceInput.value = 'unclear';
+            radioW1.checked = false;
+            radioW2.checked = false;
+            radioW1.required = false; 
+            radioW2.required = false;
+            styleOptionCardsForUnclear(true);
+          } else {
+            finalChoiceInput.value = ''; 
+            radioW1.required = true; 
+            radioW2.required = true;
+            styleOptionCardsForUnclear(false);
+          }
+          updateSubmitButtonState();
+        });
+
+        // Enhanced form submission with loading state
+        form.addEventListener('submit', function(event) {
+            // Validate form state
+            if (finalChoiceInput.value === 'option' && !radioW1.checked && !radioW2.checked) {
+                console.error("Submit clicked with 'option' but no radio selected.");
+                event.preventDefault(); 
+                return;
+            }
+            
+            if (finalChoiceInput.value === 'w1' && !radioW1.checked) {
+                event.preventDefault(); 
+                radioW1.reportValidity();
+                return;
+            }
+            
+            if (finalChoiceInput.value === 'w2' && !radioW2.checked) {
+                event.preventDefault(); 
+                radioW2.reportValidity();
+                return;
+            }
+            
+            if (!finalChoiceInput.value) {
+                console.error("Submit clicked without a valid final choice.");
+                event.preventDefault();
+                return;
+            }
+
+            // Show loading state on successful submission
+            submitVoteBtn.classList.add('btn-loading');
+            submitVoteBtn.disabled = true;
+            showLoading('Saving vote...');
+        });
+
+      } else {
+        console.error('Form elements for enhanced voting logic not found.');
+      }
+
+      // Hide loading overlay after page is fully loaded
+      window.addEventListener('load', function() {
+        setTimeout(hideLoading, 100);
+      });
     });
+
+    // Handle back/forward browser navigation
+    window.addEventListener('beforeunload', function() {
+      showLoading('Saving answer...');
+    });
+
+    // Performance optimization: prefetch next contract data
+    if ('serviceWorker' in navigator) {
+      // Simple prefetching for better performance
+      const nextButton = document.querySelector('.next-button:not(.disabled)');
+      if (nextButton) {
+        const prefetchLink = document.createElement('link');
+        prefetchLink.rel = 'prefetch';
+        prefetchLink.href = nextButton.href;
+        document.head.appendChild(prefetchLink);
+      }
+    }
   </script>
 </body>
 </html>

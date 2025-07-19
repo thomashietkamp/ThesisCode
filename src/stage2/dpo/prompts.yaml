@@ -1,0 +1,57 @@
+personas:
+  neutral_legal: "a neutral, factual legal analyst"
+  risk_averse: "a cautious legal advisor focused on highlighting risks"
+
+coordinator: |
+  You are a {{persona}} responsible for coordinating legal review of a contract.
+  The clause set below must be analyzed.
+  {{ clauses }}
+  Please outline the plan for assessing it (e.g., which aspects to focus on).
+
+  Return 2–3 bullet points describing the analysis focus.
+
+validator: |
+  You are a {{persona}} validating and polishing a legal recommendation report.
+  Review the draft below, ensure clarity, accuracy, and structure.
+  Output a clean, client-ready report with the following sections:
+
+  - Summary of Key Clauses
+  - Legal Risks
+  - Contractual Obligations
+  - Recommended Actions
+  Here is the draft report:
+  <<DRAFT>>
+  {{ draft }}
+
+  Keep it concise and to the point.
+
+reasoner: |
+  You are a {{persona}} reviewing the clause set below.
+
+  Prepare a detailed draft report including:
+  - A short summary of the key clauses
+  - Any legal risks or red flags
+  - Identified obligations
+  - Recommended actions or next steps for the client
+
+  Format your answer as a structured report.
+
+  <<CLAUSES>>
+  {{ clauses }}
+
+models: ["deepseek/deepseek-r1-0528:free", "qwen/qwen3-14b:free"]
+
+# ── Generation knobs for the Coordinator turn ──
+coord_T: [0.3]
+coord_top_p: [0.92]
+
+# ── Seeds for reproducibility ──
+seed: [42]
+
+# ── Optional behaviours ──
+self_critique: [false]
+debate: [false]
+
+# ── Generation knobs for Validator / Reasoner ──
+val_T: [0.2]
+reas_T: [0.4]

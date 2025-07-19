@@ -75,6 +75,47 @@
     .page-actions a.secondary:hover {
       background-color: #222222; /* Slightly lighter black on hover */
     }
+
+    /* Styles for Contract Summary Section */
+    .contract-summary-section {
+        margin: 2rem 0;
+        padding: 1.5rem;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #333333;
+    }
+    .contract-summary-section h3 {
+        margin-bottom: 1rem;
+        color: #2c3e50;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+    .contract-summary-text {
+        line-height: 1.7;
+        color: #444;
+        font-size: 1rem;
+    }
+    @media (max-width: 768px) {
+        .contract-summary-section {
+            margin: 1.5rem 0;
+            padding: 1rem;
+        }
+        .contract-summary-section h3 {
+            font-size: 1.25rem;
+        }
+        .contract-summary-text {
+            font-size: 0.95rem;
+        }
+    }
+
+    .option-card-enhanced.unclear-vote-display {
+        border-color: #ffc107; /* A warning-like color, e.g., amber */
+        background-color: #fff9e6; /* Lighter amber background */
+    }
+    .unclear-vote-display .option-card-footer {
+        font-weight: bold;
+        color: #856404; /* Text color that contrasts with amber */
+    }
   </style>
 </head>
 <body>
@@ -88,35 +129,56 @@
       </div>
     </header>
 
+    <!-- Contract Summary Section -->
+    {% if vote.summary %}
+    <section class="contract-summary-section">
+      <h3>Contract Summary</h3>
+      <div class="contract-summary-text">
+        {{ vote.summary }}
+      </div>
+    </section>
+    {% endif %}
+
     <!-- Hidden textareas for Markdown source -->
     <textarea id="markdown-source-w1" style="display:none;">{{ vote.w1 }}</textarea>
     <textarea id="markdown-source-w2" style="display:none;">{{ vote.w2 }}</textarea>
 
-    <div class="options-grid">
-      <div class="option-card-wrapper">
-        <div class="option-card-enhanced {% if vote.winner == 'w1' %}chosen-option{% endif %}">
-          <div class="option-card-header">
-            <h2>Option 1</h2>
-          </div>
-          <div class="markdown-content-display" id="markdown-render-w1"></div>
-          <div class="option-card-footer">
-            {{ "Option 1" if vote.winner != 'w1' else "This was your choice" }}
-          </div>
+    {% if vote.winner == 'UNCLEAR' %}
+      <div class="option-card-enhanced unclear-vote-display" style="grid-column: 1 / -1; text-align: center; margin-bottom: 2rem;">
+        <div class="option-card-header">
+          <h2>Comparison Result</h2>
+        </div>
+        <div class="option-card-footer" style="border-top: none; padding-top: 0;">
+          You marked this comparison as UNCLEAR.
         </div>
       </div>
+    {% else %}
+      <div class="options-grid">
+        <div class="option-card-wrapper">
+          <div class="option-card-enhanced {% if vote.winner == 'w1' %}chosen-option{% endif %}">
+            <div class="option-card-header">
+              <h2>Option 1</h2>
+            </div>
+            <div class="markdown-content-display" id="markdown-render-w1"></div>
+            <div class="option-card-footer">
+              {{ "Option 1" if vote.winner != 'w1' else "This was your choice" }}
+            </div>
+          </div>
+        </div>
 
-      <div class="option-card-wrapper">
-        <div class="option-card-enhanced {% if vote.winner == 'w2' %}chosen-option{% endif %}">
-          <div class="option-card-header">
-            <h2>Option 2</h2>
-          </div>
-          <div class="markdown-content-display" id="markdown-render-w2"></div>
-          <div class="option-card-footer">
-             {{ "Option 2" if vote.winner != 'w2' else "This was your choice" }}
+        <div class="option-card-wrapper">
+          <div class="option-card-enhanced {% if vote.winner == 'w2' %}chosen-option{% endif %}">
+            <div class="option-card-header">
+              <h2>Option 2</h2>
+            </div>
+            <div class="markdown-content-display" id="markdown-render-w2"></div>
+            <div class="option-card-footer">
+              {{ "Option 2" if vote.winner != 'w2' else "This was your choice" }}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    {% endif %}
 
     <div class="page-actions">
       <a href="{{ url_for('view_history') }}">Back to History</a>

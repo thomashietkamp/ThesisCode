@@ -1,14 +1,36 @@
+"""
+Legal Clause Extraction Inference Module
+
+This module provides functionality for running inference on fine-tuned models 
+to extract legal clauses from contracts. It supports PEFT (Parameter Efficient 
+Fine-Tuning) models and various device configurations.
+
+Author: Thomas Hietkamp
+"""
+
 import argparse
+import json
+import os
+from typing import Dict, List, Any, Optional, Tuple
 import yaml
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from peft import PeftModel
-import os
-import json
 
 
-def load_config(config_path="config.yaml"):
-    """Loads configuration from a YAML file."""
+def load_config(config_path: str = "config.yaml") -> Dict[str, Any]:
+    """
+    Loads configuration from a YAML file.
+
+    Args:
+        config_path: Path to the YAML configuration file.
+
+    Returns:
+        Dictionary containing the loaded configuration.
+
+    Raises:
+        SystemExit: If the file is not found or contains invalid YAML.
+    """
     try:
         with open(config_path, 'r') as file:
             return yaml.safe_load(file)
@@ -20,8 +42,13 @@ def load_config(config_path="config.yaml"):
         exit(1)
 
 
-def parse_arguments():
-    """Parses command-line arguments."""
+def parse_arguments() -> argparse.Namespace:
+    """
+    Parses command-line arguments for the inference script.
+
+    Returns:
+        Parsed arguments namespace containing input/output paths and model configuration.
+    """
     parser = argparse.ArgumentParser(
         description="Run inference using a fine-tuned model to extract clauses from contracts in a JSONL file.")
     parser.add_argument("--input_jsonl_path", required=True,
@@ -30,7 +57,7 @@ def parse_arguments():
                         help="Directory to save the output JSON file (default: out).")
     parser.add_argument("--adapter_dir", required=True,
                         help="Path to the fine-tuned LoRA adapter directory.")
-    parser.add_argument("--base_model_name", default="Qwen/Qwen3-1.7B",
+    parser.add_argument("--base_model_name", default="Qwen/Qwen3-8B",
                         help="Name of the base model used for fine-tuning.")
     parser.add_argument("--config_path", default="config.yaml",
                         help="Path to the configuration file.")
@@ -116,8 +143,6 @@ def load_model_and_tokenizer(base_model_name, adapter_dir):
             else:
                 print(
                     "Could not retrieve specific PEFT config, attempting direct access (might fail).")
-                # Fallback or alternative access method if needed
-                # print("PEFT config (direct):", model.peft_config) # Example fallback
         except AttributeError:
             print("Could not retrieve PEFT config using model.peft_config.")
         except Exception as e:
@@ -176,7 +201,13 @@ def run_inference(model, tokenizer, prompt):
     return result
 
 
-def main():
+def main() -> None:
+    """
+    Main inference function for legal clause extraction.
+
+    Processes contracts from a JSONL file using fine-tuned models to extract
+    legal clauses. Supports batch processing and various output formats.
+    """
     args = parse_arguments()
     config = load_config(args.config_path)
 
@@ -191,7 +222,7 @@ def main():
     # Construct output file path
     base_input_filename = os.path.splitext(
         os.path.basename(args.input_jsonl_path))[0]
-    output_filename = f"{base_input_filename}_outputs.json"
+    output_filename = f"{base_input_filename}_outputs__8b_real.json"
     output_filepath = os.path.join(args.output_dir, output_filename)
     print(f"Output will be incrementally saved to {output_filepath}")
 
@@ -213,8 +244,6 @@ def main():
                 contract_text = item['input']
                 print(
                     f"\nProcessing contract {line_num + 1} from {args.input_jsonl_path}...")
-                # Optional: print contract snippet
-                # print(f"Contract snippet: {contract_text[:200]}")
 
                 # Use item['input'] directly as the prompt
                 prompt = contract_text
@@ -227,6 +256,7 @@ def main():
 
                 results.append({
                     # Store a snippet for reference
+                    "id": item.get("id"),
                     "input_contract_snippet": contract_text[:200] + "...",
                     # Store full original input
                     "expected_output": item.get("target"),

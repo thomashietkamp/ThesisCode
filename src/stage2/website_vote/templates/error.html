@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - Thesis Voting System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+        .error-container {
+            background: white;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .error-icon {
+            font-size: 4em;
+            color: #e74c3c;
+            margin-bottom: 20px;
+        }
+        .error-title {
+            color: #e74c3c;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+        .error-message {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        .action-buttons {
+            margin-top: 30px;
+        }
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        .btn-secondary {
+            background-color: #95a5a6;
+        }
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">⚠️</div>
+        <h1 class="error-title">{{ error_type or "An Error Occurred" }}</h1>
+        <p class="error-message">{{ error_message or "Something went wrong. Please try again." }}</p>
+        
+        <div class="action-buttons">
+            <a href="{{ url_for('index') }}" class="btn">Return to Home</a>
+            <a href="javascript:history.back()" class="btn btn-secondary">Go Back</a>
+        </div>
+        
+        <hr style="margin: 40px 0; border: none; border-top: 1px solid #eee;">
+        <p style="color: #888; font-size: 0.9em;">
+            If this problem persists, please contact the system administrator.
+        </p>
+    </div>
+</body>
+</html> 

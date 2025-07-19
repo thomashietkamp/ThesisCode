@@ -22,14 +22,67 @@
       padding: 2rem;
     }
 
+    /* Loading overlay */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .loading-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #e0e0e0;
+      border-top: 5px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-text {
+      margin-top: 15px;
+      font-size: 1.1rem;
+      color: #555;
+      text-align: center;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
     .info-container {
       background-color: #ffffff;
       padding: 2rem 2.5rem;
       border-radius: 12px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
       width: 100%;
-      max-width: 800px; /* Adjusted for info content */
+      max-width: 800px;
       text-align: left;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .info-header {
@@ -50,7 +103,7 @@
     }
     .info-content strong {
         font-weight: 500;
-        color: #333333; /* Dark grey instead of blue */
+        color: #333333;
     }
 
     .info-content ul {
@@ -67,7 +120,7 @@
     }
 
     .proceed-button {
-      background-color: #000000; /* Real black for button */
+      background-color: #000000;
       color: #ffffff;
       font-size: 1.1rem;
       font-weight: 500;
@@ -77,10 +130,11 @@
       cursor: pointer;
       transition: background-color 0.2s ease, transform 0.2s ease;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      position: relative;
     }
     .proceed-button:hover,
     .proceed-button:focus {
-      background-color: #222222; /* Slightly lighter black on hover/focus */
+      background-color: #222222;
       transform: translateY(-2px);
       box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
     }
@@ -89,6 +143,26 @@
         cursor: not-allowed;
         box-shadow: none;
         transform: none;
+    }
+
+    /* Button loading state */
+    .btn-loading {
+      color: transparent !important;
+      pointer-events: none;
+    }
+
+    .btn-loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 20px;
+      height: 20px;
+      border: 2px solid #ffffff;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
     }
 
     .checkbox-container {
@@ -105,14 +179,14 @@
       margin-right: 0.75rem;
       width: 1.2em;
       height: 1.2em;
-      transform: translateY(-1px); /* Align better with text */
+      transform: translateY(-1px);
     }
     .checkbox-container label {
         font-size: 1rem;
         color: #333;
     }
     .error-message {
-        color: #d9534f; /* Bootstrap danger color - kept for error indication */
+        color: #d9534f;
         font-weight: bold;
         text-align: center;
         margin-bottom: 1rem;
@@ -126,6 +200,14 @@
   </style>
 </head>
 <body>
+  <!-- Loading overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div style="text-align: center;">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Starting voting session...</div>
+    </div>
+  </div>
+
   <div class="info-container">
     <header class="info-header">
       <h1>Information & Consent</h1>
@@ -143,14 +225,14 @@
 
       <p><strong>Instructions:</strong></p>
       <p>
-        Please scan through the contract (will open in a new tab) and read both reports
+        Please read the contract summary and open, scan the full contract (will open in a new tab) and read both reports
         carefully and choose the one you believe is:</p>
       <ul>
         <li><strong>Clear and coherent</strong>: information is well-organized.</li>
         <li><strong>Accurate</strong>: correctly references the clauses.</li>
         <li><strong>Actionable</strong>: contains specific, practical recommendations.</li>
       </ul>
-      <p>Select the version that you, as a legal reviewer, deem most useful.</p>
+      <p>Select the version that you, as a legal reviewer, deem most useful. If there is no clear winner, select 'unclear'. However, that option is not recommended.</p>
       <p>All data collected is anonymous and will be used solely for academic research purposes. Your thoughtful evaluations are crucial for the success of this project. You can do as many comparisons as you want, and you can stop at any time.</p>
       <p>Thank you for your time and contribution!</p>
       
@@ -168,13 +250,34 @@
       </form>
     </div>
   </div>
+  
   <script>
-    // Optional: Disable button until checkbox is checked, though 'required' handles form submission.
-    const checkbox = document.getElementById('confirm_checkbox');
-    const proceedButton = document.getElementById('proceed-btn');
-    proceedButton.disabled = !checkbox.checked;
-    checkbox.addEventListener('change', function() {
-      proceedButton.disabled = !this.checked;
+    function showLoading() {
+      const overlay = document.getElementById('loadingOverlay');
+      if (overlay) {
+        overlay.classList.add('show');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const checkbox = document.getElementById('confirm_checkbox');
+      const proceedButton = document.getElementById('proceed-btn');
+      const form = document.getElementById('info-form');
+      
+      // Disable button until checkbox is checked
+      proceedButton.disabled = !checkbox.checked;
+      checkbox.addEventListener('change', function() {
+        proceedButton.disabled = !this.checked;
+      });
+
+      // Show loading state on form submission
+      form.addEventListener('submit', function(event) {
+        if (checkbox.checked) {
+          proceedButton.classList.add('btn-loading');
+          proceedButton.disabled = true;
+          showLoading();
+        }
+      });
     });
   </script>
 </body>

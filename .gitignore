@@ -13,6 +13,8 @@ ehthumbs.db
 Thumbs.db
 src/models/metadata_agent/adapter_model.safetensors
 
+notebooks/
+
 # Node.js
 node_modules/
 npm-debug.log
@@ -155,5 +157,65 @@ target/
 coverage/
 .nyc_output
 
-# Ignore large model files
-src/models/metadata_agent/adapter_model.safetensors
+# Machine Learning and AI specific
+*.bin
+*.safetensors
+*.ckpt
+*.pth
+*.pkl
+*.h5
+*.hdf5
+models/
+checkpoints/
+wandb/
+
+# Large data files (keep structure, exclude content)
+data/CUAD_v1/full_contract_pdf/
+data/CUAD_v1/full_contract_txt/
+data/cuad_by_category/*.jsonl
+notebooks/.cache/
+
+# Model training outputs and checkpoints
+src/stage1/agents/**/adapter_model.safetensors
+src/stage1/agents/**/pytorch_model.bin
+src/stage1/agents/**/training_args.bin
+src/stage1/agents/**/tokenizer.json
+src/stage1/agents/**/tokenizer_config.json
+src/stage1/agents/**/special_tokens_map.json
+src/stage1/agents/**/added_tokens.json
+src/stage1/agents/**/training_log.jsonl
+src/stage1/agents/**/all_results.json
+src/stage1/agents/**/train_results.json
+src/stage1/agents/**/eval_results.json
+
+# Stage 2 output data
+src/stage2/data/stage2_out/
+src/stage2/data/test_reports/
+src/stage2/dpo/dpo_training_data.jsonl
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Jupyter notebook cache and checkpoints
+.ipynb_checkpoints/
+notebooks/.cache/
+
+# Large output and result files
+output_plots/*.png
+output_plots/*.json
+
+# Web application data and logs
+src/stage2/website_vote/data/
+src/stage2/website_vote/logs/
+src/stage2/website_vote/backups/
+src/stage2/website_vote/cookies.txt
+
+# Temporary and debug files
+*.tmp
+*.temp
+debug_*
+test_output/
+temp_output/

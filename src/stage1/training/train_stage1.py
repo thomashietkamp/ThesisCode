@@ -53,11 +53,13 @@ os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
+login(token="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")
+
 # -------------------- constants you rarely touch -------------------- #
 MAX_LENGTH = 5000           # Gemma-3-4B-IT context window
 MICRO_BATCH = 1               # fits on an A100-80 GB with 4-bit weights
 GRAD_ACC = 16            # 4 × 8 = 32 effective batch
-EPOCHS = 3
+EPOCHS = 1
 LR = 1e-4
 
 random.seed(42)
@@ -201,13 +203,25 @@ def dummy_metrics(_):
 # -------------------- main entry-point ------------------------------ #
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--train_jsonl", required=True)
-    ap.add_argument("--val_jsonl",   required=True)
-    ap.add_argument("--agent_name",  required=True)
-    ap.add_argument("--output_dir",  required=True, type=pathlib.Path)
-    ap.add_argument("--true_false_ratio", type=str, default="5:3",
+def main() -> None:
+    """
+    Main training function for Stage 1 legal clause extraction models.
+
+    Trains category-specific agents using LoRA fine-tuning on the CUAD dataset.
+    Supports different model sizes and training configurations with balanced sampling
+    of positive and negative examples.
+    """
+    ap = argparse.ArgumentParser(
+        description="Train Stage 1 Legal Clause Extraction Models")
+    ap.add_argument("--train_jsonl", required=True,
+                    help="Path to training JSONL file")
+    ap.add_argument("--val_jsonl", required=True,
+                    help="Path to validation JSONL file")
+    ap.add_argument("--agent_name", required=True,
+                    help="Name of the legal agent/category")
+    ap.add_argument("--output_dir", required=True, type=pathlib.Path,
+                    help="Output directory for trained model")
+    ap.add_argument("--true_false_ratio", type=str, default="4:1",
                     help="Ratio of has_ans:True to has_ans:False samples, e.g., 3:1. Default is 1:0 (all True).")
     # change if needed
     ap.add_argument("--model_name",  default="Qwen/Qwen3-8B")

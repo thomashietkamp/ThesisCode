@@ -1,0 +1,51 @@
+MAPPING:
+  {
+    "Intellectual Property & Licensing":
+      [
+        "IP Ownership Assignment",
+        "Joint IP Ownership",
+        "License Grant",
+        "Non-Transferable License",
+        "Affiliate License-Licensor",
+        "Affiliate License-Licensee",
+        "Unlimited/All-You-Can-Eat License",
+        "Irrevocable Or Perpetual License",
+        "Source Code Escrow",
+      ],
+    "Competition & Exclusivity":
+      [
+        "Most Favored Nation",
+        "Competitive Restriction Exception",
+        "Non-Compete",
+        "Exclusivity",
+        "No-Solicit Of Customers",
+        "No-Solicit Of Employees",
+        "Non-Disparagement",
+        "ROFR/ROFO/ROFN",
+      ],
+    "Termination & Control Rights":
+      [
+        "Termination For Convenience",
+        "Change Of Control",
+        "Anti-Assignment",
+        "Post-Termination Services",
+      ],
+    "Financial & Commercial Terms":
+      [
+        "Revenue/Profit Sharing",
+        "Price Restrictions",
+        "Minimum Commitment",
+        "Volume Restriction",
+        "Audit Rights",
+      ],
+    "Legal Protections & Liability":
+      [
+        "Uncapped Liability",
+        "Cap On Liability",
+        "Liquidated Damages",
+        "Warranty Duration",
+        "Insurance",
+        "Covenant Not To Sue",
+        "Third Party Beneficiary",
+      ],
+  }
